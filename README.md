@@ -138,6 +138,21 @@ Troubleshooting / tips
 - Loading the full JSON may be memory-intensive on low-RAM machines. If you run into memory errors, consider sampling the file or using chunked processing.
 - If imports fail, confirm your currently active Python interpreter and that packages were installed into that interpreter (use `python -m pip list`).
 
+## Introduction
+
+Employee turnover remains one of the most difficult issues facing organizations today. In a labor market marked by rapid mobility and rapidly changing needs, employers face increasing pressure to retain key talent. The economic stakes to retention are substantial: research consistently shows that replacing an employee can cost between 20% and 200% of the employee’s annual salary, depending on the role’s specialization and seniority (Boushey & Glynn, 2012). Additionally, turnover imposes indirect costs including productivity loss, reduced morale, and the erosion of institutional knowledge. As a result, predicting employee attrition is an important area of research with real economic consequence.
+
+
+From a machine learning perspective, turnover prediction is a compelling problem due to its complexity. Attrition is influenced by many factors, demographics, job role, workload, sentiment, performance, and organizational and individual context. Building predictive models that not only perform well but also remain interpretable is critical for ensuring that insights can support actionable and ethical decision-making. However, despite the clear importance of turnover prediction, few companies possess a sufficiently large dataset to train complex models. Real-world HR datasets are typically small or unavailable due to privacy and legal constraints, limiting the development of machine learning models.
+
+
+To address this gap, this project uses the Employee Burnout & Turnover Prediction Dataset released on HuggingFace. Although the dataset is synthetic, it was constructed to mirror real-world statistical distributions. It captures realistic patterns in employee demographics, workload characteristics, sentiment features, and attrition. Synthetic data allows for the exploration of turnover modeling with more observations without the privacy risks associated with real HR data. The dataset’s combination of structured features and textual fields also enables the study of more complex models for predicting employee departures.
+
+
+The broader impact of developing effective turnover prediction extends beyond an exercise in ML model development. Accurate and interpretable models can help organizations identify systemic issues contributing to attrition and make the necessary plans to mitigate the costs of turnover.
+
+
+
 
 ## Exploratory Data Analysis
 
@@ -336,5 +351,9 @@ These align with HR intuition: stressed, dissatisfied employees with poor engage
 - Implement explainability tools (SHAP values) for feature attribution
 
 ## References
-Pending
+
+Boushey, H., & Glynn, S. J. (2012). There Are Significant Business Costs to Replacing Employees. Center for American Progress. https://www.americanprogress.org/article/there-are-significant-business-costs-to-replacing-employees/ 
+
+
+BrotherTony. (2025). Synthetic employee dataset: 800K+ records for HR analytics [Dataset]. Hugging Face. https://huggingface.co/datasets/BrotherTony/synthetic-employee-dataset
 
