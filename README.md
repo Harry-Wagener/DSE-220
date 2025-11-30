@@ -91,16 +91,17 @@ df = pd.read_json("hf://datasets/BrotherTony/employee-burnout-turnover-predictio
 
 ### Running the Analysis Notebooks
 
-This project consists of two main notebooks:
-1. **`explore.ipynb`**: Exploratory Data Analysis and data preprocessing
-2. **`Modeling.ipynb`**: Machine learning model training and evaluation
+This project consists of three main notebooks:
+1. **`EDA.ipynb`**: Exploratory Data Analysis and data preprocessing
+2. **`Model1.ipynb`**: Machine learning model training and evaluation
+3. **`Model2.ipynb`**: Second machine learning model, improvements, and evaluation
 
-Both notebooks use IPython's `%store` magic to share variables between them.
+All notebooks use IPython's `%store` to share variables between them.
 
 
-There are two common workflows for running the analysis in `explore.ipynb`:
+There are two common workflows for running the analysis in `EDA.ipynb`:
 
-1) Run the notebook via Jupyter (Lab or classic Notebook)
+#### 1) Run the notebook via Jupyter (Lab or classic Notebook)
 
 From the repository root (after activating the virtualenv):
 
@@ -111,7 +112,7 @@ jupyter lab
 jupyter notebook
 ```
 
-Open `explore.ipynb` in the browser UI and run the cells in order. The notebook includes an example data load:
+Open `EDA.ipynb` in the browser UI and run the cells in order. The notebook includes an example data load:
 
 ```python
 import pandas as pd
@@ -119,8 +120,8 @@ data_path = 'data/employee-burnout-turnover-prediction-800k/synthetic-employee-d
 df = pd.read_json(data_path)
 ```
 
-After completing `explore.ipynb`, open `Modeling.ipynb` and run cells in order. The notebook:
-- Restores variables from `explore.ipynb` using `%store -r`
+After completing `EDA.ipynb`, open `Model1.ipynb` and run cells in order. The notebook:
+- Restores variables from `EDA.ipynb` using `%store -r`
 - Preprocesses features (one-hot encoding, normalization)
 - Trains multiple Random Forest models with different strategies
 - Evaluates performance with train/test comparisons
@@ -128,10 +129,10 @@ After completing `explore.ipynb`, open `Modeling.ipynb` and run cells in order. 
 - Includes detailed conclusions
 
 
-2) Open the notebook inside Visual Studio Code
+#### 2) Open the notebook inside Visual Studio Code
 
 - Install the VS Code Python and Jupyter extensions.
-- Open the repository folder in VS Code, open `explore.ipynb`, and select the Python kernel that corresponds to your virtual environment (look for the `.venv` interpreter).
+- Open the repository folder in VS Code, open `EDA.ipynb`, and select the Python kernel that corresponds to your virtual environment (look for the `.venv` interpreter).
 - Run cells interactively from the notebook editor.
 
 Troubleshooting / tips
@@ -166,7 +167,7 @@ Here’s the correlation heatmap from the training dataset:
 
 Our preprocessing pipeline includes:
 
-1. **Variable Restoration**: Using IPython's `%store` magic to load preprocessed data from `explore.ipynb`
+1. **Variable Restoration**: Using IPython's `%store` magic to load preprocessed data from `EDA.ipynb`
 2. **Feature Engineering**:
    - One-hot encoding for categorical variables: `role`, `job_level`, `department`
    - MinMax normalization for numerical variables: `tenure_months`, `salary`
@@ -258,7 +259,7 @@ The notebook includes detailed examples showing:
 
 ## Results
 
-### Current Model Performance (Milestone 3)
+### Model Performance (Milestone 3)
 
 **Baseline Random Forest Model** (with data leakage removed):
 
@@ -343,7 +344,7 @@ These align with HR intuition: stressed, dissatisfied employees with poor engage
 4. **Threshold Optimization**: Tune decision threshold based on business cost of errors
 5. **Calibration**: Improve probability estimates for better confidence scores
 
-### Deployment Considerations (if this project is a good portfolio item)
+### Deployment Considerations
 
 - Save trained pipelines with `joblib` for reproducibility
 - Create API endpoint for real-time predictions
