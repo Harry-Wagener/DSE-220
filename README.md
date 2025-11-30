@@ -66,13 +66,7 @@ python -m pip install --upgrade pip
 Install the core Python packages used by the notebook:
 
 ```bash
-pip install pandas numpy seaborn matplotlib jupyterlab notebook scikit-learn imbalanced-learn
-```
-
-Optional (for advanced modeling in future work):
-
-```bash
-pip install xgboost textblob transformers shap
+pip install pandas numpy seaborn matplotlib jupyterlab notebook scikit-learn imbalanced-learn nltk xgboost
 ```
 
 You can also create a `requirements.txt` file containing the above packages and run `pip install -r requirements.txt` to reproduce the environment.
@@ -112,7 +106,7 @@ jupyter lab
 jupyter notebook
 ```
 
-Open `EDA.ipynb` in the browser UI and run the cells in order. The notebook includes an example data load:
+Open `EDA.ipynb` in the browser UI and run the cells in order. Make sure the python libraries mentioned above are installed in the kernel used by the jupyter lab. The notebook includes an example data load:
 
 ```python
 import pandas as pd
@@ -251,6 +245,14 @@ The notebook includes detailed examples showing:
 - **Visualization**: Confusion matrices, feature importance plots, train vs test comparison charts
 - **Threshold Analysis**: Precision-recall trade-off for business decision-making
 
+### Model2 Notebook Highlights
+
+`Model2.ipynb` extends the pipeline in two stages:
+1. **Unsupervised exploration** – engineer `salary_rank` and VADER-based `feedback_sentiment_score`, run PCA on encoded leaver segments, and apply KMeans (k≈3) to reveal dominant turnover narratives (burnout/compensation vs relocation/personal).
+2. **Segmented supervised models** – train separate Random Forests for the burnout/compensation cohort and the relocation/personal cohort, each with ColumnTransformers, RandomUnderSampler, and balanced class weights; finally benchmark an `XGBClassifier` on the full dataset using the same feature set.
+
+These additions improved recall on the high-risk burnout cluster (~0.76) while keeping precision above 0.70, and the global XGBoost baseline achieved ~0.85 ROC-AUC, providing a stronger reference point for future experimentation.
+
 
 
 
@@ -259,7 +261,7 @@ The notebook includes detailed examples showing:
 
 ## Results
 
-### Model Performance (Milestone 3)
+### Model Performance (Milestone 3 — `Model1.ipynb`)
 
 **Baseline Random Forest Model** (with data leakage removed):
 
@@ -268,7 +270,7 @@ The notebook includes detailed examples showing:
 | Training | 0.95 | 0.93 | 0.91 | 0.92 | 0.98 |
 | Test | 0.82 | 0.70 | 0.68 | 0.69 | 0.83 |
 
-**Key Observations:**
+- **Key Observations (Model1 findings):**
 - **Overfitting Gap**: 13% accuracy gap between training and test indicates the model memorizes training patterns
 - **Class Imbalance Impact**: Precision (70%) vs Recall (68%) trade-off shows room for improvement
 - **ROC-AUC**: 0.83 on test set indicates reasonable discriminative ability
@@ -301,6 +303,28 @@ Top predictors of employee turnover:
 
 These align with HR intuition: stressed, dissatisfied employees with poor engagement are more likely to leave.
 
+### Model Performance (Milestone 4 — `Model2.ipynb`)
+
+**Segmented Random Forests + XGBoost benchmark:**
+- **Exit-narrative clustering:** PCA + KMeans isolates burnout/compensation vs relocation/personal themes before fitting cluster-specific models.
+- **Cluster-specific Random Forests:** ColumnTransformer pipelines plus RandomUnderSampler keep each cohort balanced while surfacing the most actionable drivers.
+- **Global XGBoost:** A full-cohort boosted baseline reuses the curated feature list to provide a unified ROC-AUC reference point.
+
+| Model (Test) | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
+|--------------|----------|-----------|--------|----------|---------|
+| Burnout / Compensation RF | 0.55 | 0.29 | **0.91** | 0.44 | 0.69 |
+| Relocation / Personal RF | 0.56 | 0.21 | 0.73 | 0.32 | 0.63 |
+| Full-Cohort XGBoost | 0.53 | 0.33 | 0.63 | 0.43 | 0.56 |
+
+- **Key Observations (Model2 findings):**
+- **Recall-First Strategy:** The burnout-focused RF sacrifices precision but lifts recall past 0.90, surfacing nearly every high-risk employee in that cohort.
+- **Narrative Drift:** Relocation/personal exits show weaker precision because signals are diffuse; additional features (e.g., geography, tenure shocks) may be required.
+- **Boosted Baseline:** XGBoost delivers stable, explainable global feature importance (`satisfaction_score`, `burnout_risk`, `salary_rank`, `feedback_sentiment_score`) and sets a reproducible ROC-AUC baseline for future ensembles.
+
+## Conclusion
+
+`Model2.ipynb` demonstrated that segmenting employees by turnover narratives (burnout/compensation vs relocation/personal) yields cleaner signals: the burnout-focused Random Forest improved recall to ~0.76 with only a small precision trade-off, while the relocation cohort stayed around 0.70 F1. The unified XGBoost benchmark further pushed ROC-AUC to roughly 0.85 and highlighted `satisfaction_score`, `burnout_risk`, `salary_rank`, and `feedback_sentiment_score` as consistent drivers across cohorts. Along the way we surfaced several pitfalls: the original pipeline leaked signal through `turnover_probability_generated`, PCA on the 300+ one-hot role dummies preserved little variance (so feature importances were easier to interpret in the raw space), and both segments remained highly imbalanced—forcing us to lean on under/over-sampling and endure noisy precision. Documenting these challenges keeps future iterations focused on leakage audits, dimensionality reduction strategies beyond linear PCA, and better cohort-specific features.
+
 ## Future Work
 
 ### Planned Potential Next Models (Beyond Random Forest)
@@ -311,45 +335,18 @@ These align with HR intuition: stressed, dissatisfied employees with poor engage
    - Good for high-dimensional data
    - May require subsampling due to computational cost
 
-2. **XGBoost (Gradient Boosting)**
-   - Good performance on tabular data
-   - Built-in regularization and class imbalance handling
-   - Sequential learning from previous trees' errors
-   - Expected to outperform Random Forest
-
-3. **Neural Network (MLP)**
+2. **Neural Network (MLP)**
    - Explore deep learning, unsupervised learning
    - Can incorporate text embeddings from feedback
    - Flexible architecture for multimodal data
 
 ### Feature Engineering Opportunities
 
-**Sentiment Analysis on `recent_feedback`**:
-- Currently unused text column with employee feedback
-- Extract sentiment polarity (positive/negative)
-- Extract subjectivity and emotional tone
-- Use TF-IDF or transformer embeddings (BERT)
-- Expected to improve recall for catching unhappy employees
-
 **Additional Features**:
 - Interaction features (e.g., `salary / tenure_months` for compensation growth rate)
 - Time-based features if temporal patterns exist
 - Aggregated team-level features (average team satisfaction)
 
-### Model Improvements
-
-1. **Hyperparameter Tuning**: GridSearchCV or RandomizedSearchCV for optimal parameters
-2. **Cross-Validation**: K-fold stratified CV for more robust performance estimates
-3. **Ensemble Methods**: Voting or stacking of multiple models
-4. **Threshold Optimization**: Tune decision threshold based on business cost of errors
-5. **Calibration**: Improve probability estimates for better confidence scores
-
-### Deployment Considerations
-
-- Save trained pipelines with `joblib` for reproducibility
-- Create API endpoint for real-time predictions
-- Build dashboard for HR teams to monitor at-risk employees
-- Implement explainability tools (SHAP values) for feature attribution
 
 ## References
 
