@@ -394,6 +394,8 @@ For the model where the target contains the reasons: “Burnout / Work-Life Bala
 | F1-Score     | 0.749         | 0.437        |
 | ROC-AUC      | 0.694         | 0.689        | 
 #
+The confusion matrix showing the correct predictions along with the FP and FN for this model is below:
+![CM for first segment](visualizations/m2_cm_seg1.png)
 
 For the model where the target contains the remaining reasons, the metrics are: 
 #
@@ -405,6 +407,9 @@ For the model where the target contains the remaining reasons, the metrics are:
 | F1-Score     | 0.668         | 0.322        |
 | ROC-AUC      | 0.635         | 0.634        |
 #
+The confusion matrix showing the correct predictions along with the FP and FN for this model is below:
+![CM for remaining segment](visualizations/m2_cm_seg2.png)
+
 
 ### **XGboosted Model**: 
 
@@ -417,6 +422,9 @@ For the model where the target contains the remaining reasons, the metrics are:
 | F1-Score     | 0.459              | 0.432             |
 | ROC-AUC      | 0.586              | 0.558             |
 #
+The confusion matrix showing the correct predictions along with the FP and FN for this model is below:
+![CM for XGB model](visualizations/m2_cm_xg.png)
+
 
 # Discussion
 
