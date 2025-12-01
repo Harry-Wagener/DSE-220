@@ -135,21 +135,65 @@ Troubleshooting / tips
 
 ## Introduction
 
-Employee turnover remains one of the most difficult issues facing organizations today. In a labor market marked by rapid mobility and rapidly changing needs, employers face increasing pressure to retain key talent. The economic stakes to retention are substantial: research consistently shows that replacing an employee can cost between 20% and 200% of the employee’s annual salary, depending on the role’s specialization and seniority (Boushey & Glynn, 2012). Additionally, turnover imposes indirect costs including productivity loss, reduced morale, and the erosion of institutional knowledge. As a result, predicting employee attrition is an important area of research with real economic consequence.
+Employee turnover remains one of the most difficult issues facing organizations today. In a labor market marked by mobility and changing needs, employers face increasing pressure to retain key talent. The economic stakes to retention are substantial: research shows that replacing an employee can cost between 20% and 200% of the employee’s annual salary, depending on the role’s specialization and seniority (Boushey & Glynn, 2012). Additionally, turnover imposes indirect costs including productivity loss, reduced morale, and loss of institutional knowledge. As a result, predicting employee attrition is an important area of research with real economic consequence.
 
+From a machine learning perspective, turnover prediction is a compelling problem due to its complexity. Ultimately, the choice to leave a job is a decision that is highly dependent on each individual person and does not only include factors about the job but also external factors including job market and their personal life. The problem of turnover prediction is further complicated by the lack of sufficient data. Few companies possess a sufficiently large dataset to train complex models. Real-world HR datasets are typically small or unavailable due to privacy and legal constraints, limiting the development of machine learning models.
 
-From a machine learning perspective, turnover prediction is a compelling problem due to its complexity. Attrition is influenced by many factors, demographics, job role, workload, sentiment, performance, and organizational and individual context. Building predictive models that not only perform well but also remain interpretable is critical for ensuring that insights can support actionable and ethical decision-making. However, despite the clear importance of turnover prediction, few companies possess a sufficiently large dataset to train complex models. Real-world HR datasets are typically small or unavailable due to privacy and legal constraints, limiting the development of machine learning models.
-
-
-To address this gap, this project uses the Employee Burnout & Turnover Prediction Dataset released on HuggingFace. Although the dataset is synthetic, it was constructed to mirror real-world statistical distributions. It captures realistic patterns in employee demographics, workload characteristics, sentiment features, and attrition. Synthetic data allows for the exploration of turnover modeling with more observations without the privacy risks associated with real HR data. The dataset’s combination of structured features and textual fields also enables the study of more complex models for predicting employee departures.
-
+To address this gap, this project uses the Employee Burnout & Turnover Prediction Dataset released on HuggingFace. Although the dataset is synthetic, it was constructed to mirror real-world statistical distributions. It captures realistic patterns in employee demographics, workload characteristics, sentiment features, and attrition. Synthetic data allows for the exploration of turnover modeling with more observations without the privacy risks associated with real HR data. The dataset’s combination of structured and text fields allows for complex models to predict turnover.
 
 The broader impact of developing effective turnover prediction extends beyond an exercise in ML model development. Accurate and interpretable models can help organizations identify systemic issues contributing to attrition and make the necessary plans to mitigate the costs of turnover.
 
 
 
 
+
 ## Exploratory Data Analysis
+
+After loading employee-burnout-turnover-prediction800 we fined the dataset cointains 849,999 observations, representing synthetic employee records. The dataset includes a mix of catagorical an continuous variables. 
+
+Feature Colunms and descriptions:
+ - *`employee_id`*: Unique synthetic identifier
+- *`role`*: Job title (300+ varieties)
+- *`job_level`*: Entry | Mid | Senior | Manager | Lead
+- *`department`*: Business unit (38 departments)
+- *`tenure_months`*: Time with company (1-357 months)
+- *`salary`*: Annual USD ($27K-$3384K range)
+- *`performance_score`*: Normalized 0-1 rating
+- *`satisfaction_score`*: Employee happiness (0-1)
+- *`workload_score`*: Workload burden indicator
+- *`team_sentiment`*: Team morale (0-1)
+- *`recent_feedback`*: Employee's anonymous assessment of company
+- *`communication_patterns`*: Persona-based style
+- *`project_completion_rate`*: Delivery success metric
+- *`overtime_hours`*: Extra hours logged (0-74 range)
+- *`training_participation`*: L&D engagement
+- *`collaboration_score`*: Teamwork rating
+- *`technical_skills`*: Array of tech skills (4-9 per employee)
+- *`soft_skills`*: Array of soft skills (3-7 per employee)
+- *`email_sentiment`*: Email tone analysis
+- *`slack_activity`*: Chat platform usage
+- *`meeting_participation`*: Meeting engagement
+- *`goal_achievement_rate`*: Objective completion
+- *`stress_level`*: Stress assessment (0-1)
+- *`burnout_risk`*: Burnout probability (0-1)
+- *`left_company`*: Boolean exit flag
+- *`turnover_reason`*: Exit category (if applicable)
+- *`risk_factors_summary`*: Low | Medium | High | Severe risk
+- *`turnover_probability_generated`**: ML-predicted churn risk
+- *`persona_name`*: Type of employee 
+- *`role_complexity_score`*: Job difficulty rating
+- *`career_progression_score`*: Growth trajectory
+
+
+Categorical variables: 
+- role, job_level, department, communication_patterns, technical_skills, soft_skills, left_company, risk_factors_summary, persona_name
+
+Continuous variables:
+- tenure_months, salary, performance_score, satisfaction_score, workload_score, team_sentiment, project_completion_rate, overtime_hours, training_participation, collaboration_score, email_sentiment, slack_activity, meeting_participation, goal_achievement_rate, stress_level, burnout_risk, turnover_probability_generated, role_complexity_score, career_progression_score
+
+Target column:
+- left_company. This is the Boolean column that determines whether an employee has left the company or not. Since we want to model the probability that an employee leaves the company, this is the key target column.
+- turnover_reason. This list the reason the empolyee left the company. This will be used as a psuedo-label for an unsupervised learning appoach. 
 
 Here’s the correlation heatmap from the training dataset:
 
