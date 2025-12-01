@@ -466,10 +466,17 @@ Despite limitations, this project demonstrates proof of concept. The segmented a
 The key insight is that employee turnover is not monolithic. Different exit reasons have different warning signs, and segmented modeling respects that structure. This approach demonstrates clear value over unified baseline methods that failed to capture these distinct patterns. 
 
 
-
 # Conclusion
 
 `Model2.ipynb` demonstrated that segmenting employees by turnover narratives (burnout/compensation vs relocation/personal) yields cleaner signals: the burnout-focused Random Forest improved recall to ~0.76 with only a small precision trade-off, while the relocation cohort stayed around 0.70 F1. The unified XGBoost benchmark further pushed ROC-AUC to roughly 0.85 and highlighted `satisfaction_score`, `burnout_risk`, `salary_rank`, and `feedback_sentiment_score` as consistent drivers across cohorts. Along the way we surfaced several pitfalls: the original pipeline leaked signal through `turnover_probability_generated`, PCA on the 300+ one-hot role dummies preserved little variance (so feature importances were easier to interpret in the raw space), and both segments remained highly imbalanced—forcing us to lean on under/over-sampling and endure noisy precision. Documenting these challenges keeps future iterations focused on leakage audits, dimensionality reduction strategies beyond linear PCA, and better cohort-specific features.
+
+**What We Would Do Differently:**
+
+Looking back, we would have implemented k-fold cross-validation instead of a single 80-20 split to get more robust performance estimates.  We also underutilized the text data in `recent_feedback`—we only extracted basic sentiment polarity, but using TF-IDF or transformer embeddings could capture richer signals about dissatisfaction. Additionally, our model predicts who might leave but not when, which limits operational value for HR planning.  Incorporating temporal features or survival analysis would address this gap.
+
+**Key Takeaway:**
+
+This project reinforced that problem framing matters more than model complexity.  Our biggest improvement came not from hyperparameter tuning but from recognizing that turnover is not monolithic and restructuring our approach accordingly. The progression from 8% recall (naive baseline) to 91% recall (segmented approach) demonstrates that different exit reasons have different warning signs, and respecting this structure yields better results.
 
 ## Possible Future Directions
 
