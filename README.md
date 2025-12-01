@@ -5,10 +5,6 @@ Group members:
 - Duy Nguyen (dnn007@ucsd.edu)
 - Thomas Brehme (tbrehme@ucsd.edu)
 
-# Description
-Machine Learning Class Project with Thomas Brehme, Duy Nguyen -- This project will use the Employee Burnout & Turnover Prediction Dataset from HuggingFace to study the problem of predicting employee turnover.
-
----
 
 ## Table of Content:
 - [Abstract](#abstract)
