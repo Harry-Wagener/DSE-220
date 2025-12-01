@@ -13,18 +13,15 @@ Machine Learning Class Project with Thomas Brehme, Duy Nguyen -- This project wi
 ## Table of Content:
 - [Abstract](#abstract)
 - [Dataset](#dataset)
-- [Setup & Installation](#setup--installation)
-- [How to Run](#how-to-run)
-- [Exploratory Data Analysis](#exploratory-data-analysis)
-- [Modeling Approach](#modeling-approach)
+- [Methods](#methods)
 - [Results](#results)
-- [Visualizations](#visualizations)
-- [Future Work](#future-work)
+- [Discussion](#discussion)
+- [Conclusion](#conclusion)
 - [References](#references)
 
 
 ## Abstract:
-This project will use the Employee Burnout & Turnover Prediction Dataset (~850,000 records) from HuggingFace to study the problem of predicting employee turnover. The primary task is a supervised classification problem: given demographic, role, workload, sentiment, and performance features, we want to model the probability that an employee leaves the company. Our approach will begin with tabular baselines (e.g., logistic regression, tree-based models) and extend to multi-modal models that incorporate both structured and textual features. Model performance will be evaluated with standard classification metrics, and interpretability methods (e.g., feature importance) will be applied to identify key predictors of turnover. As a secondary option, we may also explore predicting burnout risk as a regression task, allowing us to compare its relationship to turnover. This dataset provides both scale and feature diversity, making it well-suited to our goal of building predictive and interpretable machine learning models.
+This project will use the Employee Burnout & Turnover Prediction Dataset (~850,000 records) from HuggingFace to study the problem of predicting employee turnover. The primary task is a supervised classification problem: given demographic, role, workload, sentiment, and performance features, we want to model the probability that an employee leaves the company. Our approach will begin with tabular baselines (e.g., logistic regression, tree-based models) and extend to multi-modal models that incorporate both structured and textual features. Model performance will be evaluated with standard classification metrics, and interpretability methods (e.g., feature importance) will be applied to identify key predictors of turnover. For a secondary analysis, we may also explore turnover reason. This dataset provides both scale and feature diversity, making it well-suited to our goal of building predictive and interpretable machine learning models.
 
 
 
@@ -219,154 +216,262 @@ These are encoded using a one-hot encoding, much like in **`Model1.ipynb`**
 Following our clustering on the PCA results the scaled feature columns and encoded catagorical columns listed above are used to run several RF models and an XGboost model. 
 
 ## Model 1 (Random Forests)
-### First Model: Random Forest Baseline
 
+In our initial modeling approach we used a randomforset model.  We have multiple similar approaches to predicting turnover. 
+
+### First Model: Random Forest Baseline
 **Model Configuration:**
 - Algorithm: Random Forest Classifier
 - Hyperparameters: `n_estimators=100`, `max_depth=None`, `class_weight='balanced'`
 - Training data: Oversampled with RandomOverSampler
 
-**Key Findings:**
-- **Data Leakage Detected**: Feature `turnover_probability_generated` was essentially a proxy for the target variable
-- **Overfitting**: Large gap between training and test performance
-- **Model Position on Fitting Graph**: High variance (overfitting) - low training error but high test error gap
 
-**Performance Metrics** (after removing leaky feature):
-| Metric | Training Set | Test Set | Gap |
-|--------|-------------|----------|-----|
-| Accuracy | ~0.95 | ~0.82 | 0.13 |
-| ROC-AUC | ~0.98 | ~0.83 | 0.15 |
-| F1-Score | ~0.94 | ~0.78 | 0.16 |
+Following completion of training and test data leakage was detected. The feature `turnover_probability_generated` was essentially a proxy for the target variable. It was removed for the following models. 
 
-**Top Feature Importances:**
-1. `stress_level` (18.2%)
-2. `burnout_risk` (15.7%)
-3. `email_sentiment` (12.3%)
-4. `satisfaction_score` (11.8%)
-5. `meeting_participation` (9.4%)
+### Second Model: Random Forest with Undersampling
 
-### Second Model: Improved Random Forest with Undersampling
+**Model Configuration:**
+- Algorithm: Random Forest Classifier
+- Hyperparameters: `n_estimators=200`, `max_depth=10`, `min_samples_split=10`, `min_samples_leaf=5`
+- Training data: Undersampled with RandomUnderSampler
 
-**Improvements Applied:**
-- Removed `turnover_probability_generated` (data leakage fix)
-- Used RandomUnderSampler to balance classes
-- Added regularization: `max_depth=10`, `min_samples_split=10`, `min_samples_leaf=5`
-- Increased trees: `n_estimators=200`
-
-**Results:**
-- Reduced overfitting (smaller train-test gap)
-- More realistic performance estimates
-- Better generalization to unseen data
 
 ### Third Model: SMOTE + Feature Selection + BalancedRandomForest
 
-**Advanced Strategy:**
-- Selected top 20 features based on importance from previous models
-- Subsampled to 50K training samples for computational efficiency
-- Applied SMOTE for synthetic minority oversampling
-- Used BalancedRandomForestClassifier with constrained hyperparameters
+**Model Configuration:**
+- Algorithm: BalancedRandomForestClassifier
+- Hyperparameters: `n_estimators=100`, `max_depth=10`, `min_samples_split=20`, `min_samples_leaf=10`,
+- Training data: Resampled with SMOTE 
 
-**Performance:**
-- Best balance between precision and recall
-- Most computationally efficient
-- Suitable for production deployment
+To perform SMOTE we subsampled to 50k observations for computational effeciency. 
 
-### Example Predictions
+Additionally the model was trained on a pruned feature set selected top 20 features based on importance from previous model:
 
-The notebook includes detailed examples showing:
-- Ground truth vs predicted labels for train/test sets
-- Prediction probabilities for confidence assessment
-- High-confidence errors for model debugging
-- Prediction distribution analysis
+```
+top_features = [
+    'burnout_risk', 'satisfaction_score', 'collaboration_score', 'workload_score',
+    'performance_score', 'team_sentiment', 'overtime_hours', 'training_participation', 
+    'career_progression_score', 'salary', 'tenure_months', 'department_Research & Development', 
+    'department_Operations', 'role_ Team Member', 'department_Sales & Marketing', 'role_complexity_score',
+    'role_ Data Scientist', 'department_Dairy', 'department_Technology', 'department_Procurement'
+]
+```
 
-### Model Evaluation Approach
+## Model 2 (PCA + KMeans continued to segmented RF and XGBoost)
 
-- **Primary Metrics**: ROC-AUC, F1-Score (appropriate for imbalanced classification)
-- **Secondary Metrics**: Precision, Recall, Accuracy
-- **Visualization**: Confusion matrices, feature importance plots, train vs test comparison charts
-- **Threshold Analysis**: Precision-recall trade-off for business decision-making
+`Model2.ipynb` extends the the initial analysis by performing unsupervised learning before a training a predictive model on turnover. To do this the features are reduced using PCA. Only 8 components were kept. On the principle components a KMeans (k≈3) clustering was performed to reveal dominant turnover narratives (burnout/compensation vs relocation/personal).
 
-### Model2 Notebook Highlights
+After the unsupervised learning a segmented model was trained. The target was split based on the `turnover_reason` for one model target only consisted of observations where the employee left for Burnout or Compensation reasons. Another model was trained on the remaining turnover reasons (Personal, Involuntary, and Career Opprotunity.) These models were trained seperatly and had the following configuration: 
 
-`Model2.ipynb` extends the pipeline in two stages:
-1. **Unsupervised exploration** – engineer `salary_rank` and VADER-based `feedback_sentiment_score`, run PCA on encoded leaver segments, and apply KMeans (k≈3) to reveal dominant turnover narratives (burnout/compensation vs relocation/personal).
-2. **Segmented supervised models** – train separate Random Forests for the burnout/compensation cohort and the relocation/personal cohort, each with ColumnTransformers, RandomUnderSampler, and balanced class weights; finally benchmark an `XGBClassifier` on the full dataset using the same feature set.
+**Model Configuration:**
+- Algorithm: Random Forest Classifier
+- Hyperparameters: `n_estimators=400`, `max_depth=10`
+- Training data: Undersampled with RandomUnderSampler
 
-These additions improved recall on the high-risk burnout cluster (~0.76) while keeping precision above 0.70, and the global XGBoost baseline achieved ~0.85 ROC-AUC, providing a stronger reference point for future experimentation.
+Finally benchmark an `XGBClassifier` on the full dataset using the same feature set.
+**Model Configuration:**
+```
+xgb_model = XGBClassifier(
+    n_estimators=600,
+    learning_rate=0.05,
+    max_depth=6,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    min_child_weight=3,
+    gamma=0.5,
+    objective='binary:logistic',
+    eval_metric='logloss',
+    scale_pos_weight=scale_pos_weight,
+    random_state=42,
+    n_jobs=-1
+)
+```
 
 
+# Results
 
+## Model 1  (Milestone 3 — `Model1.ipynb`)
 
+Here are the metrics for the models in **`Model1.ipynb`**
 
+### **First Model: Baseline Random Forest Model**:
+#
+| **Metric**   | **Train Set**              | **Test Set**               |
+|--------------|-----------------------------|-----------------------------|
+| Accuracy     | 0.9999985294096021          | 0.7124411764705882          |
+| Precision    | 0.9999948459453052          | 0.47658945293247906         |
+| Recall       | 1.0                          | 0.0797443562519328          |
+| F1-Score     | 0.9999974229660115           | 0.13662775295385104         |
+| ROC-AUC      | 0.9999989711468421           | 0.5223899772123486          |
+#
 
-
-## Results
-
-### Model Performance (Milestone 3 — `Model1.ipynb`)
-
-**Baseline Random Forest Model** (with data leakage removed):
-
-| Dataset | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
-|---------|----------|-----------|--------|----------|---------|
-| Training | 0.95 | 0.93 | 0.91 | 0.92 | 0.98 |
-| Test | 0.82 | 0.70 | 0.68 | 0.69 | 0.83 |
-
-- **Key Observations (Model1 findings):**
-- **Overfitting Gap**: 13% accuracy gap between training and test indicates the model memorizes training patterns
-- **Class Imbalance Impact**: Precision (70%) vs Recall (68%) trade-off shows room for improvement
-- **ROC-AUC**: 0.83 on test set indicates reasonable discriminative ability
 
 **Confusion Matrix Analysis** (Test Set):
-- True Negatives (Correctly predicted "Stayed"): ~100K
-- True Positives (Correctly predicted "Left"): ~35K
-- False Positives (Incorrectly predicted "Left"): ~20K
-- False Negatives (Missed departures): ~15K
+![CM for first model](visualizations/m1_first.png)
 
-### Model Fitting Analysis
+### **Second Model: Random Forest with Undersampling**:
+#
+| **Metric**   | **Train Set** | **Test Set** |
+|--------------|---------------|--------------|
+| Accuracy     | 0.533         | 0.531        |
+| Precision    | 0.332         | 0.330        |
+| Recall       | 0.626         | 0.625        |
+| F1-Score     | 0.434         | 0.432        |
+| ROC-AUC      | 0.561         | 0.559        |
+#
 
-**Position on Bias-Variance Tradeoff:**
-- Current model exhibits **high variance** (overfitting)
-- Training error is very low (~5%), test error is higher (~18%)
-- Large performance gap indicates model complexity needs to be reduced
+**Confusion Matrix Analysis** (Test Set):
+![CM for undersampled model](visualizations/m1_second.png)
 
-**Solutions Applied:**
-1. Removed data leakage feature (`turnover_probability_generated`)
-2. Added regularization (max_depth, min_samples constraints)
-3. Used ensemble methods with balanced sampling
 
-### Feature Importance Insights
+### **Third Model: SMOTE + Feature Selection + BalancedRandomForest**:
+#
+| **Metric**   | **Train (Subsample + SMOTE)** | **Test (Subsample)** |
+|--------------|-------------------------------|------------------------|
+| Accuracy     | 0.668                         | 0.556                  |
+| Precision    | 0.652                         | 0.323                  |
+| Recall       | 0.721                         | 0.500                  |
+| F1-Score     | 0.685                         | 0.393                  |
+| ROC-AUC      | 0.668                         | 0.539                  |
+#
 
-Top predictors of employee turnover:
-1. **Behavioral/Sentiment Features**: `stress_level`, `burnout_risk`, `email_sentiment`
-2. **Engagement Metrics**: `satisfaction_score`, `meeting_participation`, `collaboration_score`
-3. **Performance Indicators**: `workload_score`, `performance_score`, `project_completion_rate`
-4. **Demographic Features**: `salary`, `tenure_months`, `department`
+## Model 2 (Milestone 4 — `Model2.ipynb`)
 
-These align with HR intuition: stressed, dissatisfied employees with poor engagement are more likely to leave.
+### **PCA: Feature reduction and explained varience**:
 
-### Model Performance (Milestone 4 — `Model2.ipynb`)
+Below is a plot showing the varience explaince my the number of components: 
+![PCA Explained Varience](visualizations/M2_PCA_explained_var.png)
 
-**Segmented Random Forests + XGBoost benchmark:**
-- **Exit-narrative clustering:** PCA + KMeans isolates burnout/compensation vs relocation/personal themes before fitting cluster-specific models.
-- **Cluster-specific Random Forests:** ColumnTransformer pipelines plus RandomUnderSampler keep each cohort balanced while surfacing the most actionable drivers.
-- **Global XGBoost:** A full-cohort boosted baseline reuses the curated feature list to provide a unified ROC-AUC reference point.
+Using `n_components = 8` 
+Variance explained: 80.70%
 
-| Model (Test) | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
-|--------------|----------|-----------|--------|----------|---------|
-| Burnout / Compensation RF | 0.55 | 0.29 | **0.91** | 0.44 | 0.69 |
-| Relocation / Personal RF | 0.56 | 0.21 | 0.73 | 0.32 | 0.63 |
-| Full-Cohort XGBoost | 0.53 | 0.33 | 0.63 | 0.43 | 0.56 |
+### **KMeans: Silhouette Analysis**:
+Below is a plot of the silhouette analysis performed on the KMeans clustering of the PCA components: 
+![Silhouette](visualizations/M2_silolette.png)
 
-- **Key Observations (Model2 findings):**
-- **Recall-First Strategy:** The burnout-focused RF sacrifices precision but lifts recall past 0.90, surfacing nearly every high-risk employee in that cohort.
-- **Narrative Drift:** Relocation/personal exits show weaker precision because signals are diffuse; additional features (e.g., geography, tenure shocks) may be required.
-- **Boosted Baseline:** XGBoost delivers stable, explainable global feature importance (`satisfaction_score`, `burnout_risk`, `salary_rank`, `feedback_sentiment_score`) and sets a reproducible ROC-AUC baseline for future ensembles.
+The clusters have the following make up of turnover reason: 
 
-## Conclusion
+**Cluster ID: 0**
+| **Reason**                               | **Count** | **Percentage** |
+|------------------------------------------|-----------|----------------|
+| Personal / Relocation                    | 43,478    | 56.458%        |
+| Burnout / Work-Life Balance              | 12,222    | 15.871%        |
+| Personal Reasons (Anomaly)               | 7,924     | 10.290%        |
+| Involuntary (Performance)                | 4,639     | 6.024%         |
+| Career Opportunity                       | 4,386     | 5.695%         |
+| Compensation / Role Dissatisfaction      | 4,360     | 5.662%         |
+
+**Cluster ID: 1** 
+| **Reason**                               | **Count** | **Percentage** |
+|------------------------------------------|-----------|----------------|
+| Burnout / Work-Life Balance              | 58,283    | 55.418%        |
+| Compensation / Role Dissatisfaction      | 23,934    | 22.757%        |
+| Personal / Relocation                    | 18,386    | 17.482%        |
+| Involuntary (Performance)                | 2,644     | 2.514%         |
+| Career Opportunity                       | 1,917     | 1.823%         |
+| Personal Reasons (Anomaly)               | 6         | 0.006%         |
+
+**Cluster ID: 2**
+| **Reason**                               | **Count** | **Percentage** |
+|------------------------------------------|-----------|----------------|
+| Burnout / Work-Life Balance              | 37,234    | 61.700%        |
+| Personal / Relocation                    | 12,314    | 20.405%        |
+| Compensation / Role Dissatisfaction      | 6,370     | 10.556%        |
+| Involuntary (Performance)                | 1,613     | 2.673%         |
+| Personal Reasons (Anomaly)               | 1,593     | 2.640%         |
+| Career Opportunity                       | 1,223     | 2.027%         |
+
+
+### **Segmented RF Model**: 
+
+For the model where the target contains the reasons: “Burnout / Work-Life Balance” and “Compensation / Role Dissatisfaction" the metrics are:
+#
+| **Metric**   | **Train Set** | **Test Set** |
+|--------------|---------------|--------------|
+| Accuracy     | 0.694         | 0.553        |
+| Precision    | 0.634         | 0.288        |
+| Recall       | 0.914         | 0.909        |
+| F1-Score     | 0.749         | 0.437        |
+| ROC-AUC      | 0.694         | 0.689        | 
+#
+
+For the model where the target contains the remaining reasons, the metrics are: 
+#
+| **Metric**   | **Train Set** | **Test Set** |
+|--------------|---------------|--------------|
+| Accuracy     | 0.635         | 0.564        |
+| Precision    | 0.613         | 0.206        |
+| Recall       | 0.733         | 0.731        |
+| F1-Score     | 0.668         | 0.322        |
+| ROC-AUC      | 0.635         | 0.634        |
+#
+
+### **XGboosted Model**: 
+
+#
+| **Metric**   | **XGB Train Set** | **XGB Test Set** |
+|--------------|--------------------|-------------------|
+| Accuracy     | 0.550              | 0.528             |
+| Precision    | 0.349              | 0.329             |
+| Recall       | 0.667              | 0.629             |
+| F1-Score     | 0.459              | 0.432             |
+| ROC-AUC      | 0.586              | 0.558             |
+#
+
+# Discussion
+
+### Data Exploration and Preprocessing
+
+We began with 850,000 employee records containing 31 features. The correlation heatmap revealed a "burnout cluster" where high workload linked to stress and burnout, which negatively correlated with satisfaction. This aligned with workplace intuition and gave us confidence in the synthetic data's realism. 
+
+During preprocessing we dropped redundant features. For example, stress_level and burnout_risk had 0. 99 correlation, and collaboration_score, slack_activity, and meeting_participation were nearly identical.  We reduced from 31 to 25 columns to avoid multicollinearity while preserving signal.  We also identified turnover_probability_generated as data leakage since it was derived from our target variable. Although it ranked first in feature importance at 9.1%, we removed it before Model 2 to ensure valid results.
+
+### Model 1: Iterative Random Forest Approaches
+
+We trained three Random Forest variants to address overfitting and class imbalance.  Our first attempt used RandomOverSampler with no depth limit, achieving 99. 99% train accuracy but only 71% test accuracy with 8% recall. The 29% train-test gap showed severe overfitting from memorizing duplicated minority class examples. 
+
+Our second attempt removed the leaky feature, applied RandomUnderSampler for 50-50 class balance, and added regularization (max_depth=10, min_samples_split=10, 200 trees). This reduced the train-test gap to nearly zero (53% train, 53% test) and improved recall to 62%.  
+
+Our third attempt used SMOTE with BalancedRandomForestClassifier on the top 20 features with a 50K subsample. We tuned the decision threshold from 0. 5 to 0.4, achieving 82% recall with 56% test accuracy. However, test accuracy plateaued around 53-56%, suggesting the unified approach had limited signal without segmentation.
+
+For our third model we performed some additional thresholding. We want to prioritize high Recall as this measurement emphasizes the cost of False Negative (miss identifying an at-risk employee who then quits unexpectedly).This is because this would lead to high  turnover rate and replacement costs, loss productivity, and team disruption.
+
+We also want to prioritize Precision as this measurement emphasizes False Positive (flagging happy employees as an at-risk employee and waste resource on retention effort), albeit this usually costs less than False Negative in this case.
+
+![Precision-Recall_tradeoff](visualizations/M1_percision_recall.png)
+
+Based on this chart, we can use a threshold of 0.4 instead of the default 0.5 as we still have a relatively high recall and F1-Score and Precision has not gone too far down.
+
+
+### Model 2: Segmented Approach with Clustering
+
+Model 2 took a different approach, hypothesizing that different turnover reasons have distinct predictive signatures. We removed the data leakage feature and engineered salary_rank (relative pay within peer group) and feedback_sentiment_score (VADER sentiment from text). 
+
+We filtered to departed employees (242,526 rows), applied PCA (59 features → 8 components, 81% variance), then K-Means clustering. Silhouette analysis identified K=3 as optimal.  Cluster 0 (32% of leavers) was 56% personal/relocation exits (unavoidable).  Clusters 1 and 2 (68% of leavers) were dominated by burnout and compensation issues (preventable).
+
+We built two Random Forests with RandomUnderSampler and regularization (max_depth=10, 400 trees). Model 2A (preventable turnover) achieved 55% test accuracy with 91% recall and 69% ROC-AUC, catching 9 out of 10 at-risk employees though precision was only 29%. This high recall was our primary goal since missing a departure is far more costly than a false alarm.  Model 2B (unavoidable turnover) achieved 56% accuracy with 73% recall. We also benchmarked with XGBoost on the full dataset, which achieved 53% accuracy and 58% ROC-AUC, validating that our segmented strategy outperformed unified modeling by 11 percentage points for the preventable cohort.
+
+### Feature Importance
+
+Top predictors across models were satisfaction_score, burnout_risk, collaboration_score, and feedback_sentiment_score. The engineered features proved valuable: salary_rank captured relative compensation dissatisfaction, and feedback_sentiment_score from text analysis ranked highly in aggregate importance. The consistency of these predictors and their alignment with HR intuition gives us confidence in the results.
+
+### Limitations
+
+Several limitations constrain our results. First, the data is synthetic and cannot fully capture real workplace complexity. Second, Model 1's initial severe overfitting (29% train-test gap) required multiple iterations to fix. Model 2 still shows moderate overfitting (14% gap). Third, low precision means 71% of flagged employees in Model 2 are false positives, which could lead to wasted HR resources on employees who were not actually at risk.  Fourth, we used a single 80-20 split rather than cross-validation due to time constraints. Finally, our model predicts who might leave but not when, limiting operational value. 
+
+### Why Results Are Still Valuable
+
+Despite limitations, this project demonstrates proof of concept. The segmented approach in Model 2 achieved 91% recall for preventable turnover, successfully identifying nearly all at-risk employees in the burnout and compensation cohorts. Most importantly, clustering revealed that 68% of departures stem from preventable causes. If an organization reduced preventable turnover by 20% through targeted interventions, the ROI would be substantial given replacement costs of $50K-$150K per employee.
+
+The key insight is that employee turnover is not monolithic. Different exit reasons have different warning signs, and segmented modeling respects that structure. This approach demonstrates clear value over unified baseline methods that failed to capture these distinct patterns. 
+
+
+
+# Conclusion
 
 `Model2.ipynb` demonstrated that segmenting employees by turnover narratives (burnout/compensation vs relocation/personal) yields cleaner signals: the burnout-focused Random Forest improved recall to ~0.76 with only a small precision trade-off, while the relocation cohort stayed around 0.70 F1. The unified XGBoost benchmark further pushed ROC-AUC to roughly 0.85 and highlighted `satisfaction_score`, `burnout_risk`, `salary_rank`, and `feedback_sentiment_score` as consistent drivers across cohorts. Along the way we surfaced several pitfalls: the original pipeline leaked signal through `turnover_probability_generated`, PCA on the 300+ one-hot role dummies preserved little variance (so feature importances were easier to interpret in the raw space), and both segments remained highly imbalanced—forcing us to lean on under/over-sampling and endure noisy precision. Documenting these challenges keeps future iterations focused on leakage audits, dimensionality reduction strategies beyond linear PCA, and better cohort-specific features.
 
-## Future Work
+## Possible Future Directions
 
 ### Planned Potential Next Models (Beyond Random Forest)
 
@@ -374,20 +479,23 @@ These align with HR intuition: stressed, dissatisfied employees with poor engage
    - Capture non-linear relationships via kernel trick
    - Works well with normalized features
    - Good for high-dimensional data
-   - May require subsampling due to computational cost
+   - May require subsampling due to computational cost and dataset size 
 
 2. **Neural Network (MLP)**
    - Explore deep learning, unsupervised learning
    - Can incorporate text embeddings from feedback
    - Flexible architecture for multimodal data
 
-### Feature Engineering Opportunities
-
-**Additional Features**:
+3. **Additional Features**:
 - Interaction features (e.g., `salary / tenure_months` for compensation growth rate)
 - Time-based features if temporal patterns exist
 - Aggregated team-level features (average team satisfaction)
 
+
+# Satement of Colaboration
+- Duy Nguyen: Contributor, contributed code, writing, and analysis  
+- Thomas Brehme: Contributor, contributed code, writing, and analysis  
+- Grant Wagener: Contributor, contributed code, writing, and analysis  
 
 ## References
 
@@ -395,4 +503,5 @@ Boushey, H., & Glynn, S. J. (2012). There Are Significant Business Costs to Repl
 
 
 BrotherTony. (2025). Synthetic employee dataset: 800K+ records for HR analytics [Dataset]. Hugging Face. https://huggingface.co/datasets/BrotherTony/synthetic-employee-dataset
+
 
