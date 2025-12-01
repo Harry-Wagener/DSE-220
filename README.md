@@ -27,6 +27,18 @@ Machine Learning Class Project with Thomas Brehme, Duy Nguyen -- This project wi
 This project will use the Employee Burnout & Turnover Prediction Dataset (~850,000 records) from HuggingFace to study the problem of predicting employee turnover. The primary task is a supervised classification problem: given demographic, role, workload, sentiment, and performance features, we want to model the probability that an employee leaves the company. Our approach will begin with tabular baselines (e.g., logistic regression, tree-based models) and extend to multi-modal models that incorporate both structured and textual features. Model performance will be evaluated with standard classification metrics, and interpretability methods (e.g., feature importance) will be applied to identify key predictors of turnover. As a secondary option, we may also explore predicting burnout risk as a regression task, allowing us to compare its relationship to turnover. This dataset provides both scale and feature diversity, making it well-suited to our goal of building predictive and interpretable machine learning models.
 
 
+
+# Introduction
+
+Employee turnover remains one of the most difficult issues facing organizations today. In a labor market marked by mobility and changing needs, employers face increasing pressure to retain key talent. The economic stakes to retention are substantial: research shows that replacing an employee can cost between 20% and 200% of the employee’s annual salary, depending on the role’s specialization and seniority (Boushey & Glynn, 2012). Additionally, turnover imposes indirect costs including productivity loss, reduced morale, and loss of institutional knowledge. As a result, predicting employee attrition is an important area of research with real economic consequence.
+
+From a machine learning perspective, turnover prediction is a compelling problem due to its complexity. Ultimately, the choice to leave a job is a decision that is highly dependent on each individual person and does not only include factors about the job but also external factors including job market and their personal life. The problem of turnover prediction is further complicated by the lack of sufficient data. Few companies possess a sufficiently large dataset to train complex models. Real-world HR datasets are typically small or unavailable due to privacy and legal constraints, limiting the development of machine learning models.
+
+To address this gap, this project uses the Employee Burnout & Turnover Prediction Dataset released on HuggingFace. Although the dataset is synthetic, it was constructed to mirror real-world statistical distributions. It captures realistic patterns in employee demographics, workload characteristics, sentiment features, and attrition. Synthetic data allows for the exploration of turnover modeling with more observations without the privacy risks associated with real HR data. The dataset’s combination of structured and text fields allows for complex models to predict turnover.
+
+The broader impact of developing effective turnover prediction extends beyond an exercise in ML model development. Accurate and interpretable models can help organizations identify systemic issues contributing to attrition and make the necessary plans to mitigate the costs of turnover.
+
+
 ## Dataset: 
 **employee-burnout-turnover-prediction800**
 
@@ -37,7 +49,7 @@ This project will use the Employee Burnout & Turnover Prediction Dataset (~850,0
     - URL:https://huggingface.co/datasets/BrotherTony/synthetic-employee-dataset
 
 
-### Quick Information (from dataset website):
+**Quick Information (from dataset website):**
 - Total Records	800,000+
 - Departments	38 unique divisions
 - Job Roles	300+ distinct positions
@@ -46,7 +58,9 @@ This project will use the Employee Burnout & Turnover Prediction Dataset (~850,0
 - Salary Range	$27K - $384K
 
 
-## Setup & Installation
+# Methods 
+
+## Requirements and Run Instuctions
 Below are reproducible steps to set up a local environment and install the packages required to run the exploratory notebook.
 
 Minimum requirements
@@ -81,75 +95,17 @@ Notes:
 df = pd.read_json("hf://datasets/BrotherTony/employee-burnout-turnover-prediction-800k/synthetic-employee-dataset.json")
 ```
 
-## How to Run
-
-### Running the Analysis Notebooks
-
 This project consists of three main notebooks:
 1. **`EDA.ipynb`**: Exploratory Data Analysis and data preprocessing
 2. **`Model1.ipynb`**: Machine learning model training and evaluation
 3. **`Model2.ipynb`**: Second machine learning model, improvements, and evaluation
 
-All notebooks use IPython's `%store` to share variables between them.
-
-
-There are two common workflows for running the analysis in `EDA.ipynb`:
-
-#### 1) Run the notebook via Jupyter (Lab or classic Notebook)
-
-From the repository root (after activating the virtualenv):
-
-```bash
-# start Jupyter Lab (recommended) or the classic notebook server
-jupyter lab
-# or
-jupyter notebook
-```
-
-Open `EDA.ipynb` in the browser UI and run the cells in order. Make sure the python libraries mentioned above are installed in the kernel used by the jupyter lab. The notebook includes an example data load:
-
-```python
-import pandas as pd
-data_path = 'data/employee-burnout-turnover-prediction-800k/synthetic-employee-dataset.json'
-df = pd.read_json(data_path)
-```
-
-After completing `EDA.ipynb`, open `Model1.ipynb` and run cells in order. The notebook:
-- Restores variables from `EDA.ipynb` using `%store -r`
-- Preprocesses features (one-hot encoding, normalization)
-- Trains multiple Random Forest models with different strategies
-- Evaluates performance with train/test comparisons
-- Analyzes feature importance and prediction examples
-- Includes detailed conclusions
-
-
-#### 2) Open the notebook inside Visual Studio Code
-
-- Install the VS Code Python and Jupyter extensions.
-- Open the repository folder in VS Code, open `EDA.ipynb`, and select the Python kernel that corresponds to your virtual environment (look for the `.venv` interpreter).
-- Run cells interactively from the notebook editor.
-
-Troubleshooting / tips
-- Loading the full JSON may be memory-intensive on low-RAM machines. If you run into memory errors, consider sampling the file or using chunked processing.
-- If imports fail, confirm your currently active Python interpreter and that packages were installed into that interpreter (use `python -m pip list`).
-
-## Introduction
-
-Employee turnover remains one of the most difficult issues facing organizations today. In a labor market marked by mobility and changing needs, employers face increasing pressure to retain key talent. The economic stakes to retention are substantial: research shows that replacing an employee can cost between 20% and 200% of the employee’s annual salary, depending on the role’s specialization and seniority (Boushey & Glynn, 2012). Additionally, turnover imposes indirect costs including productivity loss, reduced morale, and loss of institutional knowledge. As a result, predicting employee attrition is an important area of research with real economic consequence.
-
-From a machine learning perspective, turnover prediction is a compelling problem due to its complexity. Ultimately, the choice to leave a job is a decision that is highly dependent on each individual person and does not only include factors about the job but also external factors including job market and their personal life. The problem of turnover prediction is further complicated by the lack of sufficient data. Few companies possess a sufficiently large dataset to train complex models. Real-world HR datasets are typically small or unavailable due to privacy and legal constraints, limiting the development of machine learning models.
-
-To address this gap, this project uses the Employee Burnout & Turnover Prediction Dataset released on HuggingFace. Although the dataset is synthetic, it was constructed to mirror real-world statistical distributions. It captures realistic patterns in employee demographics, workload characteristics, sentiment features, and attrition. Synthetic data allows for the exploration of turnover modeling with more observations without the privacy risks associated with real HR data. The dataset’s combination of structured and text fields allows for complex models to predict turnover.
-
-The broader impact of developing effective turnover prediction extends beyond an exercise in ML model development. Accurate and interpretable models can help organizations identify systemic issues contributing to attrition and make the necessary plans to mitigate the costs of turnover.
-
-
-
+All notebooks use IPython's `%store` to share variables between them. **`EDA.ipynb`** must be run before **`Model1.ipynb`** or **`Model2.ipynb`**.
 
 
 ## Exploratory Data Analysis
 
-After loading employee-burnout-turnover-prediction800 we fined the dataset cointains 849,999 observations, representing synthetic employee records. The dataset includes a mix of catagorical an continuous variables. 
+Found in **`EDA.ipynb`** is out data exploration. After loading employee-burnout-turnover-prediction800 we fined the dataset cointains 849,999 observations, representing synthetic employee records. The dataset includes a mix of catagorical an continuous variables. 
 
 Feature Colunms and descriptions:
  - *`employee_id`*: Unique synthetic identifier
@@ -185,43 +141,84 @@ Feature Colunms and descriptions:
 - *`career_progression_score`*: Growth trajectory
 
 
-Categorical variables: 
+Categorical feature columns: 
 - role, job_level, department, communication_patterns, technical_skills, soft_skills, left_company, risk_factors_summary, persona_name
 
-Continuous variables:
+Continuous numerical feature columns:
 - tenure_months, salary, performance_score, satisfaction_score, workload_score, team_sentiment, project_completion_rate, overtime_hours, training_participation, collaboration_score, email_sentiment, slack_activity, meeting_participation, goal_achievement_rate, stress_level, burnout_risk, turnover_probability_generated, role_complexity_score, career_progression_score
 
-Target column:
-- left_company. This is the Boolean column that determines whether an employee has left the company or not. Since we want to model the probability that an employee leaves the company, this is the key target column.
-- turnover_reason. This list the reason the empolyee left the company. This will be used as a psuedo-label for an unsupervised learning appoach. 
+Targets:
+- `left_company`. This is the Boolean column that determines whether an employee has left the company or not. Since we want to model the probability that an employee leaves the company, this is the key target column.
+- `turnover_reason`. This list the reason the empolyee left the company. This will be used as a psuedo-label for an unsupervised learning appoach. 
 
-Here’s the correlation heatmap from the training dataset:
+There is no duplicate observation. There are some missing data such as various labels indicating the same missing data (Anonymous Employee, Current Employee - Anonymous Employee, " ", ...) for the _role_ column. Another example is "Not Applicable" in _turnover_reason_ column.
+
+We start our exploration by looking at the correlations amongst the numerical features. Below is a correlation heatmap from our dataset:
 
 ![Feature Correlation Heatmap](visualizations/heatmap.png)
 
-## Modeling Approach
+The correlations show that high `workload_score` is directly linked to high `stress_level` and `burnout_risk`. These burnout factors are strongly negatively correlated with satisfaction_score and performance_score, and positively linked to a higher `turnover_probability_generated`. There's a logical connection between longer `tenure_months` and a `higher career_progression_score`. `stress_level` and `burnout_risk` are strongly correlated to each other (0.99-1.00). We are dropping stress_level and keeping burnout_risk. `performance_score`, `goal_achievement_rate`, and `project_completion_rate` are all highly correlated to each other (0.95-1.00), so we're using only one, `performance_score`, and drop the two others. `slack_activity`, `meeting_participation`, and `collaboration_score` are all extremely related (mostly 1.00). We're keeping `collaboration_score` and dropping `slack_activity` and `meeting_participation`. `satisfaction_score` correlates highly with `email_sentiment`, dropping `email_sentiment`.
 
-### Data Preprocessing
+Looking into our catagorical varibles we find they provide a realistic breakdown of role and level.
 
-Our preprocessing pipeline includes:
+Pie chart below shows the distribution of job leves among the dataset.
 
-1. **Variable Restoration**: Using IPython's `%store` magic to load preprocessed data from `EDA.ipynb`
-2. **Feature Engineering**:
-   - One-hot encoding for categorical variables: `role`, `job_level`, `department`
-   - MinMax normalization for numerical variables: `tenure_months`, `salary`
-   - PCA analysis on high-cardinality role features (300+ unique roles → 2 principal components for visualization)
 
-3. **Train-Test Split**: 80/20 split with stratification to maintain class balance
+![Job Level Pie Chart](visualizations/job_level_pie_chart.png)
+
+ Here we can see clearly that the most common role is Mid-level career position, followed by Entry, Manager, Senior, and Lead. This follows a normal distribution with the roles that take more time or least time to achieve being much less common than the role that takes an average amount of time to achieve.
+
+
+ The bar chart below shows the most common job role without missing data (Anonymous Role).
+
+![20 top roles by count](visualizations/top_20_roles_vertical_barchart.png)
+
+ This bar chart reveals a wide variety of job professions. Understandably, Manager is the most common role as that role exists in every industry. Remarkably, the difference in numbers in each role after the top 10 roles seem to not vary by much.
+
+## Data Preprocessing
+
+
+ **Variable Restoration**: Using IPython's `%store` magic to load preprocessed data from `EDA.ipynb`
+In this notebook we removed columns with high correlations. These columns are listed in the previose section. 
+
+After varible restoration our preprocessiong diverges in the two modeling notebooks. 
+
+In **`Model1.ipynb`** we use one-hot encoding for categorical variables: `role`, `job_level`, `department` MinMax normalization for numerical variables: `tenure_months`, `salary`. The other continuous numerical varibles are already standardized. We then drop columns like `employee_id` that we will not use in our models trained in this notebook. We then perform an 80/20 split with stratification to maintain class balance
    - Training set: ~680K samples
    - Test set: ~170K samples
    - Target distribution: 71% stayed, 29% left
 
-4. **Class Imbalance Handling**: Tested multiple approaches:
+Our dataset has a significant class imbalance which we used several approaches to address: 
    - Random Oversampling (ROS)
    - Random Undersampling (RUS)
    - SMOTE (Synthetic Minority Over-sampling Technique)
    - BalancedRandomForestClassifier
 
+
+In **`Model2.ipynb`** we create a new dataset which includes only observations where the employee left. There are two additional feature engineering steps in this notebook. We use a VADER sentiment score to our calculate a sentiment score based off the `recent_feedback` column. Additionally we add `salary_rank` column that assigns a percentage rank to each employee based off their `role` and `salary`. 
+
+For our unsupervised learning approach we select only the following continuous feature columns:
+
+```
+feature_cols = ['satisfaction_score',
+                'burnout_risk', 
+                'collaboration_score', 
+                'feedback_sentiment_score',
+                'workload_score',
+                'performance_score',
+                'overtime_hours']
+```
+These features are scaled before PCA with a standared scaler
+
+The following catagorical features are included in the PCA: 
+```
+categorical_vars = [ 'job_level', 'department', 'persona_name']
+```
+These are encoded using a one-hot encoding, much like in **`Model1.ipynb`**
+
+Following our clustering on the PCA results the scaled feature columns and encoded catagorical columns listed above are used to run several RF models and an XGboost model. 
+
+## Model 1 (Random Forests)
 ### First Model: Random Forest Baseline
 
 **Model Configuration:**
